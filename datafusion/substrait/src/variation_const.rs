@@ -37,6 +37,7 @@
 
 /// The "system-preferred" variation (i.e., no variation).
 pub const DEFAULT_TYPE_VARIATION_REF: u32 = 0;
+pub const DICTIONARY_TYPE_VARIATION_REF: u32 = 1;
 pub const UNSIGNED_INTEGER_TYPE_VARIATION_REF: u32 = 1;
 
 #[deprecated(since = "42.0.0", note = "Use `PrecisionTimestamp(Tz)` type instead")]

@@ -38,8 +38,8 @@ use crate::variation_const::{
     DATE_32_TYPE_VARIATION_REF, DATE_64_TYPE_VARIATION_REF,
     DECIMAL_128_TYPE_VARIATION_REF, DECIMAL_256_TYPE_VARIATION_REF,
     DEFAULT_CONTAINER_TYPE_VARIATION_REF, DEFAULT_TYPE_VARIATION_REF,
-    LARGE_CONTAINER_TYPE_VARIATION_REF, UNSIGNED_INTEGER_TYPE_VARIATION_REF,
-    VIEW_CONTAINER_TYPE_VARIATION_REF,
+    DICTIONARY_TYPE_VARIATION_REF, LARGE_CONTAINER_TYPE_VARIATION_REF,
+    UNSIGNED_INTEGER_TYPE_VARIATION_REF, VIEW_CONTAINER_TYPE_VARIATION_REF,
 };
 use datafusion::arrow::array::{Array, GenericListArray, OffsetSizeTrait};
 use datafusion::arrow::temporal_conversions::NANOSECONDS;
@@ -1660,6 +1660,18 @@ fn to_substrait_type(dt: &DataType, nullable: bool) -> Result<substrait::proto::
                 precision: *p as i32,
             })),
         }),
+        DataType::Dictionary(k, v) => {
+            let key_type = to_substrait_type(k, false)?;
+            let value_type = to_substrait_type(v, false)?;
+            Ok(substrait::proto::Type {
+                kind: Some(r#type::Kind::Map(Box::new(r#type::Map {
+                    key: Some(Box::new(key_type)),
+                    value: Some(Box::new(value_type)),
+                    type_variation_reference: DICTIONARY_TYPE_VARIATION_REF,
+                    nullability,
+                }))),
+            })
+        }
         _ => not_impl_err!("Unsupported cast type: {dt:?}"),
     }
 }

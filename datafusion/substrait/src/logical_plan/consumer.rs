@@ -43,8 +43,8 @@ use crate::variation_const::{
     DATE_32_TYPE_VARIATION_REF, DATE_64_TYPE_VARIATION_REF,
     DECIMAL_128_TYPE_VARIATION_REF, DECIMAL_256_TYPE_VARIATION_REF,
     DEFAULT_CONTAINER_TYPE_VARIATION_REF, DEFAULT_TYPE_VARIATION_REF,
-    LARGE_CONTAINER_TYPE_VARIATION_REF, UNSIGNED_INTEGER_TYPE_VARIATION_REF,
-    VIEW_CONTAINER_TYPE_VARIATION_REF,
+    DICTIONARY_TYPE_VARIATION_REF, LARGE_CONTAINER_TYPE_VARIATION_REF,
+    UNSIGNED_INTEGER_TYPE_VARIATION_REF, VIEW_CONTAINER_TYPE_VARIATION_REF,
 };
 #[allow(deprecated)]
 use crate::variation_const::{
@@ -1999,6 +1999,16 @@ fn from_substrait_type(
                 let value_type = map.value.as_ref().ok_or_else(|| {
                     substrait_datafusion_err!("Map type must have value type")
                 })?;
+                if map.type_variation_reference == DICTIONARY_TYPE_VARIATION_REF {
+                    return Ok(DataType::Dictionary(
+                        Box::new(from_substrait_type(
+                            key_type, extensions, dfs_names, name_idx,
+                        )?),
+                        Box::new(from_substrait_type(
+                            value_type, extensions, dfs_names, name_idx,
+                        )?),
+                    ));
+                }
                 let key_field = Arc::new(Field::new(
                     "key",
                     from_substrait_type(key_type, extensions, dfs_names, name_idx)?,
